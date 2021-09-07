@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "tsc && concurrently \"node scripts/dev.js\" \"npm run start-engine\"",
-		"start-engine": "wait-port -t 10000 localhost:5252 && electron dist/index.js",
+		"start-engine": "wait-port -t 10000 localhost:5252 && electron dist/index.js --js-flags=\"--expose-gc\"",
 		"build": ""
 	},
 	"keywords": [],

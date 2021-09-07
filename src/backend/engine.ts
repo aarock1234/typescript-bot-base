@@ -49,7 +49,7 @@ export class Engine {
 		for (let i = 0; i < this.cpuCount; i++) {
 			const engineProcess = childProcess.spawn(
 				process.execPath,
-				[path.join(__dirname, 'child.js')],
+				[path.join(__dirname, 'child.js'), '--js-flags="--expose-gc"'],
 				{
 					stdio: [0, 1, 2, 'ipc'],
 				}
