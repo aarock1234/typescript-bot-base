@@ -33,9 +33,14 @@ class Process {
 
 					break;
 				}
-				case 'startTask': {
+				case 'createTask': {
 					const taskData: TaskData = JSON.parse(ClusterMessageParsed.data);
-					this.startTask(taskData);
+					this.createTask(taskData);
+					break;
+				}
+				case 'startTask': {
+					const taskID: string = ClusterMessageParsed.data;
+					this.startTask(taskID);
 					break;
 				}
 				case 'stopTask': {
@@ -80,12 +85,26 @@ class Process {
 		this.moduleConstructors[moduleData.value] = moduleExports.default;
 
 		console.log(this.moduleConstructors);
+		this.createTask({
+			id: moduleData.value,
+			running: false,
+			module: moduleData,
+			internal: {
+				a: 'b',
+			},
+		});
+
+		this.startTask(moduleData.value);
 	}
 
-	startTask(taskData: TaskData) {
+	createTask(taskData: TaskData) {
 		const moduleClass = this.moduleConstructors[taskData.module.value];
 
-		new moduleClass(taskData)
+		this.taskList[taskData.id] = new moduleClass(taskData);
+	}
+
+	startTask(taskID: string) {
+		this.taskList[taskID].Start();
 	}
 
 	stopTask(taskID: string) {

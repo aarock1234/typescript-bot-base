@@ -21,7 +21,7 @@ const MODULES = [
 		name: 'Footlocker US',
 		value: 'footsites',
 	},
-	{
+	/*{
 		name: 'ChampsSports',
 		value: 'footsites',
 	},
@@ -36,7 +36,7 @@ const MODULES = [
 	{
 		name: 'Snipes',
 		value: 'snipes',
-	},
+	},*/
 ];
 
 var bytecodeStorage = {};

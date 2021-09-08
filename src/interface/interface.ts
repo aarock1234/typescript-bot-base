@@ -3,9 +3,9 @@ import { ChildProcess } from 'child_process';
 
 export interface TaskData {
 	id: string;
-	running: boolean;
 	module: Module;
-	internal: Object;
+	running?: boolean;
+	internal?: Object;
 }
 
 export interface Module {
