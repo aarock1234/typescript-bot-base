@@ -21,6 +21,10 @@ const MODULES = [
 		name: 'Footlocker US',
 		value: 'footsites',
 	},
+	{
+		name: 'YeezySupply',
+		value: 'yeezysupply',
+	},
 	/*{
 		name: 'ChampsSports',
 		value: 'footsites',

@@ -17,7 +17,7 @@ export default class Footsites extends Task {
 
 	async getQueue() {
 		console.log('Getting Queue');
-
+		
 		const requestOptions: RequestOptions = {
 			url: 'https://ja3er.com/json',
 			method: 'GET',

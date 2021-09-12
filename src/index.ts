@@ -1,6 +1,6 @@
 import { app } from 'electron';
 
-import startEngine, { Engine } from './backend/engine';
+import startEngine, { Engine } from './engine/engine';
 
 async function startBot() {
 	const mainEngine: Engine = startEngine();
