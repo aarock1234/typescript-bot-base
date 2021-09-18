@@ -1,7 +1,7 @@
 import { Cookie, CookiesGetFilter, CookiesSetDetails, net, Session, session } from 'electron';
 import { v4 as uuidv4 } from 'uuid';
 
-import { RequestOptions, ResponseOptions } from '../interface/interface';
+import { RequestOptions, ResponseOptions } from './interface';
 import { ClientRequest, ClientRequestConstructorOptions, IncomingMessage } from 'electron';
 
 export class Response {
@@ -117,7 +117,7 @@ export class Request {
 			});
 
 			if (this.requestBody?.length > 0) {
-				this.request.write(this.requestBody.toString());
+				this.request.write(this.requestBody);
 			}
 
 			this.request.on('error', (requestError: Error) => {
@@ -165,14 +165,15 @@ export class Request {
 				});
 
 				requestResponse.on('end', () => {
-					resolve(
-						new Response({
-							url: formattedOptions.url,
-							statusCode: requestResponse.statusCode,
-							body: bodyBuffer,
-							headers: requestResponse.headers,
-						})
-					);
+					const responseData: Response = new Response({
+						url: formattedOptions.url,
+						statusCode: requestResponse.statusCode,
+						body: bodyBuffer,
+						headers: requestResponse.headers,
+					})
+
+					if (requestResponse.statusCode < 200 || requestResponse.statusCode > 299) reject(responseData);
+					else resolve(responseData);
 				});
 			});
 

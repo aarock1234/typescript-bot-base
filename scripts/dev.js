@@ -3,6 +3,7 @@ const bytenode = require('bytenode');
 const fs = require('fs');
 const path = require('path');
 const Module = require('module');
+const Enpaki = require('enpaki');
 
 require('console-stamp')('HH:MM:ss.l');
 
@@ -21,11 +22,12 @@ const MODULES = [
 		name: 'Footlocker US',
 		value: 'footsites',
 	},
+	/*
 	{
 		name: 'YeezySupply',
 		value: 'yeezysupply',
 	},
-	/*{
+	{
 		name: 'ChampsSports',
 		value: 'footsites',
 	},
@@ -72,29 +74,41 @@ function createBytecodeServer() {
 	});
 }
 
-async function packModule(moduleName) {
-	console.log(`Generating bytecode for '${moduleName}' module.`);
+async function packModule(moduleFolder) {
+	const moduleEntry = path.join(__dirname, '../dist/modules/', moduleFolder, `/${moduleFolder}.js`);
 
-	const moduleSourceBuffer = fs.readFileSync(
-		path.join(__dirname, '../dist/modules/', moduleName, `/${moduleName}.js`)
-	);
-	const moduleSource = moduleSourceBuffer.toString();
+	console.log(moduleEntry);
 
-	const moduleBytecode = await bytenode.compileElectronCode(Module.wrap(moduleSource));
+	const moduleBytecode = await new Promise((resolve) => {
+		let enpakiOut = [];
+		let enpakiBuffer = undefined;
 
-	return moduleBytecode.toString('base64');
+		/** First JS file!  */
+		const enpakiStream = new Enpaki(moduleEntry);
+
+		enpakiStream.on('data', (enpakiChunk) => {
+			enpakiOut.push(enpakiChunk);
+		})
+
+		enpakiStream.on('end', async () => {
+			enpakiBuffer = Buffer.concat(enpakiOut);
+
+			const enpakiCode = Module.wrap(enpakiBuffer.toString()).replace('(function (exports,', '(function (exports, _enpakiModules,').replace('var _enpakiModules = {};', '');
+
+			const enpakiBytecode = await bytenode.compileElectronCode(enpakiCode);
+
+			resolve(enpakiBytecode.toString('base64'));
+		})
+	})
+
+	bytecodeStorage[moduleFolder] = moduleBytecode;
 }
 
-function readModules() {
+async function readModules() {
 	fs.readdirSync(path.join(__dirname, '../dist/modules'), {
 		withFileTypes: true,
-	})
-		.filter((moduleFolder) => moduleFolder.isDirectory())
-		.forEach(async (moduleFolder) => {
-			const moduleBytecode = await packModule(moduleFolder.name);
-
-			bytecodeStorage[moduleFolder.name] = moduleBytecode;
-		});
+	}).filter((moduleFolder) => moduleFolder.isDirectory())
+	  .forEach(async (moduleFolder) => packModule(moduleFolder.name))
 }
 
 readModules();

@@ -2,7 +2,7 @@ import bytenode from 'bytenode';
 import ModuleWrapper from 'module';
 import path from 'path';
 
-import { Module, ClusterMessage, TaskData } from '../interface/interface';
+import { Module, ClusterMessage, TaskData } from '../interface';
 
 import Task from '../modules/task';
 
@@ -60,20 +60,28 @@ class Process {
 		const bytecodeBuffer: Buffer = Buffer.from(moduleData.bytecodeString ?? '', 'base64');
 
 		const vmScript = bytenode.runBytecode(bytecodeBuffer);
-		let moduleExports = {
-			default: undefined,
-		};
 
 		const customRequire = (modulePath: string) => {
 			if (modulePath.match(/\.|\/|\\/g)) {
-				modulePath = path.join(__dirname, '../modules/', moduleData.value, modulePath);
+				let exportsContext = { default: undefined }
+				let moduleContext = { exports: exportsContext };
+
+				if (!enpakiContext[`/${modulePath}.js`]) {
+					modulePath = `../${modulePath}`;
+				}
+				enpakiContext[`/${modulePath}.js`](exportsContext, customRequire, moduleContext, __filename, __dirname);
+								
+				return exportsContext.default;
 			}
 
 			return require(modulePath);
 		};
 
-		vmScript.apply(moduleExports, [
-			moduleExports,
+		let enpakiContext = {};
+
+		vmScript.apply({}, [
+			{},
+			enpakiContext,
 			customRequire,
 			ModuleWrapper,
 			__filename,
@@ -82,16 +90,20 @@ class Process {
 			global,
 		]);
 
-		this.moduleConstructors[moduleData.value] = moduleExports.default;
+		console.log(enpakiContext);
 
-		console.log(this.moduleConstructors);
+		let exportsContext = { default: undefined }
+		let moduleContext = { exports: exportsContext };
+
+		enpakiContext[`/${moduleData.value}.js`](exportsContext, customRequire, moduleContext, __filename, __dirname);
+		const moduleConstructor = exportsContext.default;
+		this.moduleConstructors[moduleData.value] = moduleConstructor;
+
 		this.createTask({
 			id: moduleData.value,
+			input: '',
 			running: false,
 			module: moduleData,
-			internal: {
-				a: 'b',
-			},
 		});
 
 		this.startTask(moduleData.value);

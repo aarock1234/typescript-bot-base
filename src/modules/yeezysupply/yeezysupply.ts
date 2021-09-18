@@ -1,4 +1,4 @@
-import { TaskData } from '../../interface/interface';
+import { TaskData } from '../../interface';
 import Task from '../task';
 
 export default class YeezySupply extends Task {

@@ -1,17 +1,21 @@
-import Client from '../client/client';
-import { TaskData } from '../interface/interface';
+import Client from '../client';
+import { TaskData } from '../interface';
+import utils from '../utils';
 
 export default class Task {
-	internal!: Object;
 	taskData!: TaskData;
 	functionFlow!: Array<Function>;
 	requestClient!: Client;
 	constructor(taskData: TaskData) {
 		this.taskData = taskData;
 
-		for (const key in this.taskData.internal) {
-			this[key] = this.taskData.internal[key];
-		}
+		this.taskData.retryDelay = 3000;
+	}
+
+	async handleError(_: any): Promise<any> {
+		global.gc?.();
+
+		return {} as any;
 	}
 
 	Start() {
@@ -27,9 +31,24 @@ export default class Task {
 	}
 
 	async executeFlow() {
-		for (const func of this.functionFlow) {
-			if (this.taskData.running) await this[func.name]();
-			else return;
+		for (var func of this.functionFlow) {
+			/** Internal loop for errors! */
+			whileRunning:
+			while (this.taskData.running) {
+				try {
+					func = await this[func.name]();
+					if (func) {
+						continue whileRunning;
+					} else break;
+				} catch (error) {
+					const errorFunc: any = await this.handleError(error);
+					await utils.sleep(this.taskData.retryDelay ?? 3000); 
+					if (errorFunc) {
+						func = errorFunc;
+						continue whileRunning;
+					}
+				}
+			}
 		}
 	}
 }

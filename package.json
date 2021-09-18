@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "tsc && concurrently \"node scripts/dev.js\" \"npm run start-engine\"",
+		"dev": "npm run compile && concurrently \"node scripts/dev.js\" \"npm run start-engine\"",
+		"compile": "tsc",
 		"start-engine": "wait-port -t 10000 localhost:5252 && electron dist/index.js --js-flags=\"--expose-gc\"",
 		"build": ""
 	},
@@ -13,6 +14,8 @@
 	"license": "ISC",
 	"devDependencies": {
 		"@types/uuid": "^8.3.1",
+		"concurrently": "^6.2.1",
+		"enpaki": "^0.1.1",
 		"express": "^4.17.1",
 		"typescript": "^4.4.2",
 		"wait-port": "^0.2.9"

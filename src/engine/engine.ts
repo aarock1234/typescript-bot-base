@@ -2,8 +2,8 @@ import childProcess from 'child_process';
 import path from 'path';
 import os from 'os';
 
-import Client, { Request, Response } from '../client/client';
-import { ClusterProcess, Module, ClusterMessage, RequestOptions } from '../interface/interface';
+import Client, { Request, Response } from '../client';
+import { ClusterProcess, Module, ClusterMessage, RequestOptions } from '../interface';
 
 const API_URL: string = 'http://localhost:5252';
 
